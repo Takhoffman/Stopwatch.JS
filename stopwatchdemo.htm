@@ -1,0 +1,90 @@
+<html>
+<head>
+<title>Stopwatch Demo</title>
+</head>
+<body>
+<!-- First step is to create a place that we can output our stopwatch time.
+	  we are going to use a span tag (but keep in mind it can be anything you choose) 
+	  and we'll refer to it via an id tag called "timer". -->
+<span id="timer">00:00:00</span>
+<br />
+<!-- Second step is we are going to define some clickable areas for our start, stop and restart buttons .
+	  Our start is identified with the id tag of "start", our stop is identified with the id tag of "stop", and 
+	  our reset is identified with the id tag of "restart". For this scenario we are using the javascript onClick to tie a function
+	  to the click event.-->
+<span id="start" onClick="start()">start</span>&nbsp;<span id="stop" onClick="stop()">stop</span>&nbsp;<span id="reset" onClick="reset()">reset</span>
+<!-- The HTML code above is actually all we need to set the foundation for our stopwatch, 
+	  we could style them up with css and we could use different things for our stop, start, and restart buttons.
+      Then all we need to do is define some javascript functions.	  -->
+<br /><br />
+Below are a list of methods availible to each stopwatch object, see what they return by clicking on them. Take a peek at the source code to see how easy it is to get going.
+<br /><br />
+<span id="isRunning" onClick="isRunning()">stopwatch.isRunning()</span> - returns 1 if stopwatch is running and 0 if it is not running.
+<br />
+<span id="toMilliseconds" onClick="toMilliseconds()">stopwatch.toMilliseconds()</span> - returns the elapsed time the stopwatch has been running in total milliseconds.
+<br />
+<span id="toSeconds" onClick="toSeconds()">stopwatch.toSeconds()</span> - returns the elapsed time the stopwatch has been running in total seconds.
+<br />
+<span id="toSeconds" onClick="toHoursRounded()">stopwatch.toHoursRounded()</span> - returns the elapsed time the stopwatch has been running in hours (rounded to 2 decimal places).
+<br />
+<span id="toJson" onClick="toJson()">stopwatch.toJson()</span> - returns a json object in days hours minutes seconds.
+</body>
+<script src="stopwatch.js"></script>
+
+<script type="text/javascript">
+// Start of our javascript functions. Ideally you wouldn't use global variables but for this demonstration we'll keep it simple.
+// First we create a new stopwatch object, passing it an initial value, keep in mind we could also pass it values dynamically.
+// We also need to create something to keep track of our intervals which update the HTML on the page, the interval has no affect
+// on the actual stopwatch running it just controls how often the HTML is updated.
+var stopwatch = new Stopwatch(0);
+var interval;
+
+// This is the function that is called when the start button is clicked on our page. What it does is calls the start method on the
+// stopwatch object, passing it the parameters "sec" which signify we want to run the timer in seconds mode.
+function start() {
+	stopwatch.start("sec");
+    interval = setInterval(function () {
+					document.getElementById('timer').innerHTML = stopwatch.toString(4);
+                }, 100);
+}
+
+// This is the function that is called when the stop button is clicked on our page. What it does is call the stop method on the
+// stopwatch object. 
+function stop() {
+	stopwatch.stop();
+	clearInterval(interval);
+}
+
+// This is the function that is called when the reset button is clicked on our page. What it does is call the reset method on the
+// stopwatch object. It also updates the HTML on our page (the span tag showing our time) to reflect the current state of our
+// stopwatch object.
+function reset() {
+	stopwatch.reset();
+	clearInterval(interval);
+	document.getElementById('timer').innerHTML = stopwatch.toString(4);
+}
+// These three functions are all we need to run a basic stopwatch. Everything below are additional methods you can call which
+// mainly return things that you could pass onto your server to store in a database somewhere.
+
+function isRunning() {
+	alert(stopwatch.isRunning());
+}
+
+function toMilliseconds() {
+	alert(stopwatch.toMilliseconds());
+}
+
+function toSeconds() {
+	alert(stopwatch.toSeconds());
+}
+
+function toHoursRounded() {
+	alert(stopwatch.toHoursRounded());
+}
+
+function toJson() {
+	alert(stopwatch.toJson());
+}
+
+</script>
+</html>

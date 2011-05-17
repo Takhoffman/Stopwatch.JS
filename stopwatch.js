@@ -1,4 +1,4 @@
-function Stopwatch(args) {
+function Stopwatch() {
 
     // ************************************************************************ 
     // PRIVATE VARIABLES AND FUNCTIONS 
@@ -9,11 +9,35 @@ function Stopwatch(args) {
 
     var timer = 0;
 
-    var initialTime = args;
-
-    var elapsedTime = new TimeSpan(0, 0, 0);
+    var elapsedTime = new TimeSpan(0);
+	
+	var oneMs = new TimeSpan(10);
 
     var oneSecond = new TimeSpan(0, 0, 1);
+	
+	var initialTime = 0;
+	
+	switch (arguments.length) {
+        case 0:
+            break;
+        case 1:
+            initialTime = new TimeSpan(arguments[0]);
+            break;
+        case 2:
+			initialTime = new TimeSpan(arguments[0], arguments[1]);
+            break;
+        case 3:
+			initialTime = new TimeSpan(arguments[0], arguments[1], arguments[2]);
+            break;
+        case 4:
+			initialTime = new TimeSpan(arguments[0], arguments[1], arguments[2], arguments[3]);
+            break;
+        case 5:
+			initialTime = new TimeSpan(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+            break;
+        default:
+            throw ("No constructor of Stopwatch supports " + arguments.length + " arguments");
+    }
 
     // ************************************************************************ 
     // PRIVILEGED METHODS 
@@ -21,9 +45,13 @@ function Stopwatch(args) {
     // MAY NOT BE CHANGED; MAY BE REPLACED WITH PUBLIC FLAVORS 
     // ************************************************************************
 
-    this.do_elapsedTime = function () {
+    this.addSeconds = function () {
         elapsedTime = elapsedTime.add(oneSecond);
     }
+	
+	this.addMilliseconds = function () {
+		elapsedTime = elapsedTime.add(oneMs);
+	}
 
     // ************************************************************************ 
     // GETTERS AND SETTERS
@@ -64,39 +92,63 @@ function Stopwatch(args) {
     };
 }
 
-Stopwatch.prototype.start = function () {
-    var elapsedTime = this.getInitialTime();
-    this.setElapsedTime(elapsedTime);
-
-    var timer = setInterval(this.do_elapsedTime, 1000);
-    this.setTimer(timer);
-
+Stopwatch.prototype.start = function (args) {
+	var isRunning = this.getStatus();
+	if (isRunning == 0) {
+		var elapsedTime = this.getInitialTime();
+		this.setElapsedTime(elapsedTime);
+		
+		if (args == "sec")
+			var timer = setInterval(this.addSeconds, 1000);
+		else if (args == "ms")
+			var timer = setInterval(this.addMilliseconds, 1);
+			
+		this.setTimer(timer);
+	}
     this.setStatus(1);
 }
 
 Stopwatch.prototype.stop = function () {
-    var timer = this.getTimer();
-    var clearedTimer = clearInterval(timer);
-    this.setTimer(clearedTimer);
-
+	var isRunning = this.getStatus();
+	if (isRunning == 1) {
+		var timer = this.getTimer();
+		var clearedTimer = clearInterval(timer);
+		this.setInitialTime(this.getElapsedTime());
+		this.setTimer(clearedTimer);
+	}
     this.setStatus(0);
 }
 
 Stopwatch.prototype.reset = function () {
-    var timer = this.getTimer();
-    var clearedTimer = clearInterval(timer);
-    this.setTimer(clearedTimer);
 
-    var resetTime = new TimeSpan(0, 0, 0);
-    this.setElapsedTime(resetTime);
+	var timer = this.getTimer();
+	var clearedTimer = clearInterval(timer);
+	this.setTimer(clearedTimer);
+
+	var resetTime = new TimeSpan(0);
+	this.setElapsedTime(resetTime);
+	this.setInitialTime(resetTime);
 
     this.setStatus(0);
+}
+
+Stopwatch.prototype.isRunning = function () {
+    var status = this.getStatus();
+
+    return status;
 }
 
 Stopwatch.prototype.toMilliseconds = function () {
     var time = this.getElapsedTime();
 
     time = time.totalMilliseconds();
+    return time;
+}
+
+Stopwatch.prototype.toSeconds = function () {
+    var time = this.getElapsedTime();
+
+    time = time.totalSeconds();
     return time;
 }
 
@@ -125,7 +177,7 @@ Stopwatch.prototype.toJson = function () {
 Stopwatch.prototype.toString = function (returnMode) {
     var time = this.getElapsedTime();
 
-    ms = time.milliseconds();
+    ms = time.milliseconds() / 10;
     sec = time.seconds();
     min = time.minutes();
     hr = time.hours();
@@ -188,7 +240,7 @@ Stopwatch.prototype.toString = function (returnMode) {
                            (Math.abs(day) ? TimeSpan.pad(Math.abs(day)) + "." : "") +
                            TimeSpan.pad(Math.abs(hr)) + ":" +
                            TimeSpan.pad(Math.abs(min)) + ":" + TimeSpan.pad(Math.abs(sec)) + "." +
-                           Math.abs(ms);
+                           TimeSpan.pad(Math.abs(ms));
     }
 
 }
